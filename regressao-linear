@@ -1,0 +1,80 @@
+
+
+import numpy as np
+
+
+class LinearRegression:
+    #parametros do modelo
+    def __init__(  
+        self,
+        learning_rate=0.01,
+        max_iter=1000,     # criterio de paragem 1: nr max de iterações
+        tol=None,          # criterio de paragem 2: melhoria min
+        min_loss=None      # criterio de paragem 3: erro míniminmo
+    ):
+        self.learning_rate = learning_rate
+        self.max_iter = max_iter
+        self.tol = tol
+        self.min_loss = min_loss
+
+        self.coef_ = None        #weight
+        self.intercept_ = None   #bias
+        self.loss_history_ = []  #guarda o erro em cd iteração
+
+        self.n_iter_ = 0         #nr de interações realizadas
+        self.stop_reason_ = None #motivo da paragem do treino
+
+    def _mse(self, y_true, y_pred):  #error
+        return np.mean((y_true - y_pred) ** 2)
+
+    def fit(self, X, y):
+        X = np.array(X, dtype=float)
+        y = np.array(y, dtype=float)
+
+        n_samples, n_features = X.shape
+
+        #começa tudo a 0
+        self.coef_ = np.zeros(n_features)
+        self.intercept_ = 0.0
+        self.loss_history_.clear()
+
+        prev_loss = None
+
+        for i in range(self.max_iter):  #melhorar o modelo
+            
+            y_pred = X @ self.coef_ + self.intercept_ #previsão atual
+
+            #erro
+            loss = self._mse(y, y_pred)
+            self.loss_history_.append(loss)
+            self.n_iter_ = i + 1
+
+            # critério de paragem: erro min
+            if self.min_loss is not None and loss <= self.min_loss:
+                self.stop_reason_ = "erro mínimo atingido"
+                break
+
+            #gradientes
+            dw = (-2 / n_samples) * (X.T @ (y - y_pred))
+            db = (-2 / n_samples) * np.sum(y - y_pred)
+
+            #atualização dos parâmetros
+            self.coef_ -= self.learning_rate * dw
+            self.intercept_ -= self.learning_rate * db
+
+            #criterio de paragem: melhoria min do erro
+            if self.tol is not None and prev_loss is not None:
+                if abs(prev_loss - loss) < self.tol:
+                    self.stop_reason_ = "melhoria mínima do erro atingida"
+                    break
+
+            prev_loss = loss
+
+        if self.stop_reason_ is None:
+            self.stop_reason_ = "número máximo de iterações atingido"
+
+        return self
+
+    def predict(self, X):
+        X = np.array(X, dtype=float)
+        return X @ self.coef_ + self.intercept_
