@@ -8,14 +8,12 @@ class LinearRegression:
     """
     
     def __init__(  #parametros do modelo
-        
         self,
         learning_rate=0.01,
         n_iterations=1000,     # criterio de paragem 1: nr max de iterações
         tol=None,          # criterio de paragem 2: melhoria min
-        min_loss=None      # criterio de paragem 3: erro míniminmo
-    ):
-        
+        min_loss=None ):      # criterio de paragem 3: erro míniminmo
+    
         self.learning_rate = learning_rate
         self.n_iterations = n_iterations
         self.tol = tol
@@ -115,10 +113,12 @@ class LinearRegression:
         """
         Prediction of output values with the training model
         """
+        
+        X = np.array(X, dtype=float)
+        
         if X.ndim != 2:
             raise ValueError("X must be a 2D matrix with the shape [n_samples, n_features]")
         
-        X = np.array(X, dtype=float)
         return X @ self.coef_ + self.intercept_
 
     def score(self, X, y):
