@@ -2,31 +2,31 @@
 This project implements a Linear Regression model using Gradient Descent.
 
 ## Model Overview
-- **Gradient Descent Optimization** - Iteratively minimizes Mean Squared Error (MSE)
+**Gradient Descent Optimization** - Iteratively minimizes Mean Squared Error (MSE)
 
-- **Stopping Criteria**:
+**Stopping Criteria**:
   - Maximum number of iterations
   - Minimum error threshold
   - Minimum improvement between iterations
 
-- **Features** - Can handle both univariate and multivariate regression
+**Features** - Can handle both univariate and multivariate regression
 
-- **R² Score** - Evaluated model performance
+**R² Score** - Evaluated model performance
 
-- **Parameters:**
+**Parameters:**
 - `learning_rate` (float): Step size for gradient descent
 - `n_iterations_max` (int): Maximum number of training iterations
 - `tol` (float, optional): Stops if improvement < tol
 - `min_loss` (float, optional): Stops if MSE < min_loss
 
-- **Attributes:**
+**Attributes:**
 - `coef_` (array): Learned coefficients
 - `intercept_` (float): Learned bias term
 - `loss_history_` (list): MSE at each iteration
 - `n_iter_` (int): Number of iterations performed
 - `stop_reason_` (str): Why training stopped
 
-- **Methods:**
+**Methods:**
 - `fit(X, y)`: Trains the model
 - `predict(X)`: Makes predictions
 - `score(X, y)`: Calculates the R squared score
@@ -40,7 +40,7 @@ Requirements: `numpy`, `matplotlib` (for examples)
 
 ## Example Application
 ### Univariate Regression
-An example application of the model is provided where we train a model on synthetic data with noise:
+An example application of the model is provided where we train a model on synthetic data with noise: example_linear_regression
 
 ![Linear Regression Example](example_linear_regression.png)
 
