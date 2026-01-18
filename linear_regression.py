@@ -39,7 +39,10 @@ class LinearRegression:
         self.loss_history_ = []
         self.n_iter_ = 0
         self.stop_reason_ = None
-
+        
+        # Scaling parameters
+        self.X_mean_ = None
+        self.X_std_ = None
 
     def __repr__(self):
         """ Showcases the parameters of the Linear Regression Model """
@@ -71,6 +74,12 @@ class LinearRegression:
 
         n_samples, n_features = X.shape
         
+        #Scaling
+        self.X_mean_ = X.mean(axis=0)
+        self.X_std_ = X.std(axis=0)
+        self.X_std_[self.X_std_ == 0] = 1.0  #as to avoid division by zero
+        X_scaled = (X - self.X_mean_) / self.X_std_
+        
         #Parameters initialization
         self.coef_ = np.zeros(n_features)
         self.intercept_ = 0.0
@@ -84,7 +93,7 @@ class LinearRegression:
 
         #Loop Gradient Descent
         for i in range(self.n_iterations_max):  
-            y_pred = X @ self.coef_ + self.intercept_
+            y_pred = X_scaled @ self.coef_ + self.intercept_
 
             loss = self._mean_squared_error(y, y_pred)
             self.loss_history_.append(loss)
@@ -96,7 +105,7 @@ class LinearRegression:
                 break
 
             #gradients
-            grad_w = (-2 / n_samples) * (X.T @ (y - y_pred))
+            grad_w = (-2 / n_samples) * (X_scaled.T @ (y - y_pred))
             grad_b = (-2 / n_samples) * np.sum(y - y_pred)
 
             #Parameters update
@@ -119,13 +128,14 @@ class LinearRegression:
 
     def predict(self, X):
         """ Prediction of output values with the training model """
-        
         X = np.array(X, dtype=float)
         
         if X.ndim != 2:
             raise ValueError("X must be a 2D matrix with the shape [n_samples, n_features]")
         
-        return X @ self.coef_ + self.intercept_
+        X_scaled = (X - self.X_mean_) / self.X_std_
+        
+        return X_scaled @ self.coef_ + self.intercept_
 
     def score(self, X, y):
         """
