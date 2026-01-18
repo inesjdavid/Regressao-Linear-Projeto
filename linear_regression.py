@@ -3,100 +3,107 @@ import numpy as np
 
 class LinearRegression:
     """
-    Linear Regression Model with Gradient Descent
-    Function: y = wX + b
+    Linear Regression Model (y = wX + b) with Gradient Descent as to minimize Mean Squared Error loss function
+    
+    Parameters:
+    learning_rate: default=0.01
+        Step size for gradient descent updates
+    n_iterations_max: default=1000
+        Maximum number of training iterations (stopping criteria 1)
+    tol: optional
+        Minimum improvement threshold between iterations (stopping criteria 2)
+        Training stops if |loss[i-1] - loss[i]| < tol
+    min_loss: optional
+        Minimum acceptable loss value (stopping criteria 3)
+        Training stops if MSE <= min_loss
     """
     
-    def __init__(  #parametros do modelo
+    def __init__(
         self,
         learning_rate=0.01,
-        n_iterations=1000,     # criterio de paragem 1: nr max de iterações
-        tol=None,          # criterio de paragem 2: melhoria min
-        min_loss=None ):      # criterio de paragem 3: erro míniminmo
+        n_iterations_max=1000,
+        tol=None,
+        min_loss=None):
     
+        #Hyperparameters
         self.learning_rate = learning_rate
-        self.n_iterations = n_iterations
+        self.n_iterations_max = n_iterations_max
         self.tol = tol
         self.min_loss = min_loss
 
+        #Model parameters from training
         self.coef_ = None        #weight
         self.intercept_ = None   #bias
-        self.loss_history_ = []  #guarda o erro em cd iteração
-
-        self.n_iter_ = 0         #nr de interações realizadas
-        self.stop_reason_ = None #motivo da paragem do treino
+        
+        #Training history
+        self.loss_history_ = []
+        self.n_iter_ = 0
+        self.stop_reason_ = None
 
 
     def __repr__(self):
-        """
-        Showcases the parameters of the Linear Regression Model
-        """
-        
+        """ Showcases the parameters of the Linear Regression Model """
         trained = self.coef_ is not None
         return (
-            f"LinearRegression("f"learning_rate={self.learning_rate}, "f"n_iterations={self.n_iterations}, "f"trained={trained}, "f"n_iter={self.n_iter_})" )
+            f"LinearRegression("f"learning_rate={self.learning_rate}, "f"n_iterations_max={self.n_iterations_max}, "f"trained={trained}, "f"n_iter={self.n_iter_})" )
 
 
-    def _mean_squared_error(self, y_true, y_pred):  #erro
-        """
-        Function: Mean Squared Error Loss
-        """
-        
+    def _mean_squared_error(self, y_true, y_pred):
+        """ Calculate Mean Squared Error """
         return np.mean((y_true - y_pred) ** 2)
 
-    def fit(self, X, y): #treino do modelo
-        """
-        Model Training
+    def fit(self, X, y):
+        """ Model Training with gradient descent
+        
         Parameters: 
         X (feature matrix) with shape [n_samples, n_features]
-        Y (target values) with shape [n_samples]
+        Y (target values) with shape [n_samples,]
         """ 
-        
+        #Convert to numpy arrays
         X = np.array(X, dtype=float)
         y = np.array(y, dtype=float)
         
-        #validação dos inputs
+        #Input validation
         if X.ndim != 2:
             raise ValueError("X must be a 2D matrix with the shape [n_samples, n_features]")
-
         if y.ndim != 1:
             raise ValueError("Y must be a 1D array of target values.")
 
         n_samples, n_features = X.shape
         
-        #inicialização dos parametros
+        #Parameters initialization
         self.coef_ = np.zeros(n_features)
         self.intercept_ = 0.0
 
-        #reset do treino
+        #Reset Training
         self.loss_history_.clear()
         self.n_iter_ = 0
         self.stop_reason_ = None
 
         prev_loss = None
 
-        #gradiente descendente ciclo
-        for i in range(self.n_iterations):  
-            y_pred = X @ self.coef_ + self.intercept_ #previsão atual
+        #Loop Gradient Descent
+        for i in range(self.n_iterations_max):  
+            y_pred = X @ self.coef_ + self.intercept_
 
-            loss = self._mean_squared_error(y, y_pred) #erro
+            loss = self._mean_squared_error(y, y_pred)
             self.loss_history_.append(loss)
             self.n_iter_ = i + 1
 
-            # critério de paragem: erro min
+            #Stopping criterion 3: minimum loss threshold
             if self.min_loss is not None and loss <= self.min_loss:
                 self.stop_reason_ = "Minimum error threshold reached"
                 break
 
-            #gradientes
+            #gradients
             grad_w = (-2 / n_samples) * (X.T @ (y - y_pred))
             grad_b = (-2 / n_samples) * np.sum(y - y_pred)
 
-            #atualização dos parametros
+            #Parameters update
             self.coef_ -= self.learning_rate * grad_w
             self.intercept_ -= self.learning_rate * grad_b
 
-            #criterio de paragem: melhoria min do erro
+            #Stopping criterion 2: minimum improvement threshold
             if self.tol is not None and prev_loss is not None:
                 if abs(prev_loss - loss) < self.tol:
                     self.stop_reason_ = "Minimum improvement threshold reached"
@@ -104,15 +111,14 @@ class LinearRegression:
 
             prev_loss = loss
 
+        # topping criterion 1: maximum iterations
         if self.stop_reason_ is None:
             self.stop_reason_ = "Maximum number of iterations reached"
 
         return self
 
     def predict(self, X):
-        """
-        Prediction of output values with the training model
-        """
+        """ Prediction of output values with the training model """
         
         X = np.array(X, dtype=float)
         
